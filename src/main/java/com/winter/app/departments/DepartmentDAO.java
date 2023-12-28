@@ -5,45 +5,86 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.List;
 
 import com.winter.app.util.DBConnector;
 
 public class DepartmentDAO {
-
-	public ArrayList<DepartmentDTO> getList() throws Exception {
-		//DB접속 후 부서테이블의 모든 정보를 출력
-		
+	
+	//getDetail, 부서번호로 부서정보 조회
+	
+	public int update(DepartmentDTO departmentDTO,int temp) throws Exception{
 		Connection con = DBConnector.getConnector();
-		ArrayList<DepartmentDTO> ar = new ArrayList<DepartmentDTO>();
+		String sql = "UPDATE DEPARTMENTS SET DEPARTMENT_ID=?, DEPARTMENT_NAME = ?,MANAGER_ID=?,LOCATION_ID=? WHERE DEPARTMENT_ID =?";
+		PreparedStatement st = con.prepareStatement(sql);
+		st.setInt(1, departmentDTO.getDepartment_id());
+		st.setString(2, departmentDTO.getDepartment_name());
+		st.setInt(3, departmentDTO.getManager_id());
+		st.setInt(4, departmentDTO.getLocation_id());
+		st.setInt(5, temp);
+		int result = st.executeUpdate();
+		DBConnector.disConnect(st, con);
 		
-		String sql = "SELECT * FROM DEPARTMENTS";
-		PreparedStatement ps = con.prepareStatement(sql);
+		return result;
 		
-		ResultSet rs = ps.executeQuery();
-		System.out.println("DEPAR_ID\tDEPAT_NAME\tMANAGER_ID\tLOCATION_ID");
+	}
+	
+	public int addList(DepartmentDTO departmentDTO) throws Exception {
+		Connection con = DBConnector.getConnector();
+		String sql = "INSERT INTO DEPARTMENTS VALUES(?,?,?,?)";
+		PreparedStatement st = con.prepareStatement(sql);
+		st.setInt(1, departmentDTO.getDepartment_id());
+		st.setString(2, departmentDTO.getDepartment_name());
+		st.setInt(3, departmentDTO.getManager_id());
+		st.setInt(4, departmentDTO.getLocation_id());
+		int result = st.executeUpdate();
+		DBConnector.disConnect(st, con);
+		
+		return result;
+	}
+	
+	
+	public List<DepartmentDTO> getList() throws Exception {
+		//DB접속 후 부서테이블의모든 정보를 출력
+		List<DepartmentDTO> ar = new ArrayList<DepartmentDTO>();
+		Connection con = DBConnector.getConnector();
+		
+		String sql ="SELECT * FROM DEPARTMENTS";
+		 
+		PreparedStatement st = con.prepareStatement(sql);
+		
+		ResultSet rs = st.executeQuery();
+		
 		while(rs.next()) {
-			DepartmentDTO dto = new DepartmentDTO();
-//			System.out.print(rs.getString("DEPARTMENT_ID" )+"\t\t");
-//			System.out.print(rs.getString("DEPARTMENT_NAME")+"\t\t");
-//			System.out.print(rs.getString("MANAGER_ID")+"\t\t");
-//			System.out.println(rs.getString("LOCATION_ID"));
-//			System.out.println("=====================================");
-			dto.setDepartment_id(Integer.parseInt( rs.getString("DEPARTMENT_ID")) );
-			dto.setDepartment_name(rs.getString("DEPARTMENT_NAME"));
-			dto.setLocation_id(rs.getInt("LOCATION_ID"));
-			dto.setManager_id(rs.getInt("MANAGER_ID"));
+			DepartmentDTO departmentDTO = new DepartmentDTO();
+			departmentDTO.setDepartment_id(rs.getInt("DEPARTMENT_ID"));
+			departmentDTO.setDepartment_name(rs.getString("DEPARTMENT_NAME"));
+			departmentDTO.setLocation_id(rs.getInt("LOCATION_ID"));
+			departmentDTO.setManager_id(rs.getInt("MANAGER_ID"));
 			
-			ar.add(dto);
-			
+			ar.add(departmentDTO);
 		}
 		
-//		for(DepartmentDTO departmentDTO:ar) {
-//			System.out.println(departmentDTO.getDepartment_id());
-//			
-//		}
-		
-		DBConnector.disConnect(rs, ps, con);
+		DBConnector.disConnect(rs, st, con);
 		return ar;
 	}
 	
+	public DepartmentDTO detail(DepartmentDTO departmentDTO) throws Exception {
+		Connection con = DBConnector.getConnector();
+		String sql = "SELECT * FROM DEPARTMENTS WHERE DEPARTMENT_ID = ?";
+		PreparedStatement st = con.prepareStatement(sql);
+		st.setInt(1, departmentDTO.getDepartment_id());
+		ResultSet rs = st.executeQuery();
+		DepartmentDTO dto =null;
+		if(rs.next()) {
+		dto = new DepartmentDTO();
+		dto.setDepartment_id(rs.getInt("DEPARTMENT_ID"));
+		dto.setDepartment_name(rs.getString("DEPARTMENT_NAME"));
+		dto.setLocation_id(rs.getInt("LOCATION_ID"));
+		dto.setManager_id(rs.getInt("MANAGER_ID"));
+		}
+		return dto;
+		
+	}
+
 }
